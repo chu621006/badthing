@@ -1,20 +1,18 @@
-# 使用一個較不精簡的 Python 基礎映像
-FROM python:3.10-buster
+# 使用更精簡但更適合運行時的 Python 基礎映像
+FROM python:3.10-slim-buster
 
 # 設定工作目錄
 WORKDIR /app
 
 # 確保 apt-get 數據庫是最新的，並且安裝必要的系統依賴
-# 針對 libGL.so.1 錯誤，安裝最核心的 OpenGL 和 V4L 相關庫
+# 精簡安裝列表，依賴 slim 映像提供更多基礎庫
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
     poppler-utils \
     wget \
-    # 核心 OpenCV 依賴：通常解決 libGL.so.1 問題
-    libopengl0 \     # <<--- 關鍵：這個庫通常能解決 libGL.so.1 依賴問題
-    libv4l-0 \       # <<--- 常用於多媒體和影像處理
-    # 其他常見的 Streamlit 和 Python 應用程式依賴
+    # 核心 OpenGL 相關庫 (libGL.so.1 通常由這個提供)
     libgl1-mesa-glx \
+    # 其他可能間接需要的通用庫
     libglib2.0-0 \
     libxext6 \
     libsm6 \
@@ -26,7 +24,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # 重新配置動態連結庫
     && ldconfig
 
-# **確保 libGL.so.1 的路徑在運行時可用 (保留)**
+# 確保 libGL.so.1 的路徑在運行時可用 (保留這些，作為防禦性措施)
 ENV LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/:/usr/lib/:${LD_LIBRARY_PATH}"
 RUN ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/libGL.so.1 || true \
     && ldconfig

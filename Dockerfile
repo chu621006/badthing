@@ -1,56 +1,35 @@
-# 使用一個較不精簡的 Python 基礎映像，更穩定的版本
+# 使用一個較不精簡的 Python 基礎映像
 FROM python:3.10-buster
 
 # 設定工作目錄
 WORKDIR /app
 
-# 確保 apt-get 數據庫是最新的
-# 安裝所有必要的系統依賴，特別是針對 OpenCV (libGL.so.1) 和 Tesseract
+# 確保 apt-get 數據庫是最新的，並且安裝必要的系統依賴
+# 針對 libGL.so.1 錯誤，安裝最核心的 OpenGL 和 V4L 相關庫
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
     poppler-utils \
     wget \
-    # OpenCV 相關依賴：確保 libGL.so.1 及其他相關庫被找到
-    libgl1 \
+    # 核心 OpenCV 依賴：通常解決 libGL.so.1 問題
+    libopengl0 \     # <<--- 關鍵：這個庫通常能解決 libGL.so.1 依賴問題
+    libv4l-0 \       # <<--- 常用於多媒體和影像處理
+    # 其他常見的 Streamlit 和 Python 應用程式依賴
     libgl1-mesa-glx \
-    libglx-mesa0 \
-    libglu1-mesa \
-    libegl1-mesa \
-    mesa-utils \
-    libglvnd-dev \
-    # 常用 X11 和圖像相關庫 (OpenCV 可能間接依賴)
+    libglib2.0-0 \
     libxext6 \
+    libsm6 \
     libxrender1 \
     libfontconfig1 \
     libgdk-pixbuf2.0-0 \
-    libsm6 \
-    libice6 \
-    libxkbcommon0 \
-    libxi6 \
-    libxrandr2 \
-    libxfixes3 \
-    libxcursor1 \
-    libxdamage1 \
-    libxinerama1 \
-    libxcomposite1 \
-    libnss3 \
-    libasound2 \
-    libgbm1 \
-    libdbus-1-3 \
-    libatk-bridge2.0-0 \
-    libgtk-3-0 \
-    ffmpeg \
     # 清理 apt 緩存以減小映像大小
     && rm -rf /var/lib/apt/lists/* \
     # 重新配置動態連結庫
     && ldconfig
 
-# **關鍵步驟：確保 libGL.so.1 的路徑在運行時可用**
-# 顯式設置 LD_LIBRARY_PATH，指向常見的共享庫路徑
+# **確保 libGL.so.1 的路徑在運行時可用 (保留)**
 ENV LD_LIBRARY_PATH="/usr/lib/x86_64-linux-gnu/:/usr/lib/:${LD_LIBRARY_PATH}"
-# 創建一個符號連結作為備用方案，如果 LD_LIBRARY_PATH 不夠
 RUN ln -s /usr/lib/x86_64-linux-gnu/libGL.so.1 /usr/lib/libGL.so.1 || true \
-    && ldconfig # 再次運行 ldconfig 確保連結生效
+    && ldconfig
 
 # 下載並安裝繁體中文語言包 (chi_tra.traineddata)
 RUN mkdir -p /usr/share/tesseract-ocr/tessdata/ && \

@@ -37,9 +37,9 @@ COPY . .
 # 所以 TESSDATA_PREFIX 應該設定為 /usr/share/tesseract-ocr/
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/
 
-# **關鍵修改：明確將 /usr/bin 加入 PATH 環境變數**
+# **關鍵新增：明確將 /usr/bin 加入 PATH 環境變數** 🚀
 # 確保 tesseract 執行檔（通常安裝在 /usr/bin/）在應用程式運行時可被找到。
-ENV PATH="/usr/bin:${PATH}" # <--- 在這裡新增這一行
+ENV PATH="/usr/bin:${PATH}" # <-- 在這裡添加這行
 
 # 啟動 Streamlit 應用程式
 EXPOSE 8501

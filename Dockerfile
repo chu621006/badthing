@@ -5,6 +5,7 @@ FROM python:3.10-buster
 WORKDIR /app
 
 # 確保 apt-get 數據庫是最新的，並且安裝必要的系統依賴
+# 添加更全面的 OpenGL 相關函式庫
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr \
     libgl1-mesa-glx \
@@ -16,6 +17,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgdk-pixbuf2.0-0 \
     python3.10-dev \
     poppler-utils \
+    mesa-utils \        # <-- 新增
+    libglvnd-dev \      # <-- 新增
+    libegl1-mesa \      # <-- 新增
     && rm -rf /var/lib/apt/lists/* \
     && ldconfig
 
@@ -31,14 +35,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 複製您的 Streamlit 應用程式檔案
 COPY . .
 
-# **新增診斷命令 (用於調試，之後若成功可移除)**
-# 打印 PATH 環境變數
+# 診斷命令 (用於調試，之後若成功可移除)
 RUN echo "Current PATH in Docker build: $PATH"
-# 查找 tesseract 執行檔的實際路徑
 RUN which tesseract || echo "tesseract not found by 'which' command"
-# 測試 tesseract 是否可以運行
 RUN tesseract --version || echo "tesseract --version failed"
-
 
 # 設定 Tesseract 語言數據檔案的路徑。
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/

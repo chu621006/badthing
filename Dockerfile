@@ -31,15 +31,20 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 複製您的 Streamlit 應用程式檔案
 COPY . .
 
+# **新增診斷命令 (用於調試，之後若成功可移除)**
+# 打印 PATH 環境變數
+RUN echo "Current PATH in Docker build: $PATH"
+# 查找 tesseract 執行檔的實際路徑
+RUN which tesseract || echo "tesseract not found by 'which' command"
+# 測試 tesseract 是否可以運行
+RUN tesseract --version || echo "tesseract --version failed"
+
+
 # 設定 Tesseract 語言數據檔案的路徑。
-# Tesseract OCR 會在 TESSDATA_PREFIX 指向的目錄下尋找一個名為 tessdata 的子目錄，然後在其內部尋找語言包。
-# 由於我們將 chi_tra.traineddata 直接放在 /usr/share/tesseract-ocr/tessdata/，
-# 所以 TESSDATA_PREFIX 應該設定為 /usr/share/tesseract-ocr/
 ENV TESSDATA_PREFIX=/usr/share/tesseract-ocr/
 
-# **關鍵新增：明確將 /usr/bin 加入 PATH 環境變數** 🚀
 # 確保 tesseract 執行檔（通常安裝在 /usr/bin/）在應用程式運行時可被找到。
-ENV PATH="/usr/bin:${PATH}" # <-- 在這裡添加這行
+ENV PATH="/usr/bin:${PATH}"
 
 # 啟動 Streamlit 應用程式
 EXPOSE 8501

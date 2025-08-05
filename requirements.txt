@@ -4,4 +4,4 @@ pdfplumber>=0.10.0
 Pillow
 pytesseract
 img2table
-opencv-python
+opencv-python-headless # <--- 將這裡從 opencv-python 改為 opencv-python-headless

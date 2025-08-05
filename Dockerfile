@@ -1,5 +1,5 @@
-# 使用更精簡但更適合運行時的 Python 基礎映像
-FROM python:3.10-slim-buster
+# 使用更穩定且廣泛兼容的 Python 基礎映像
+FROM python:3.9-slim-buster  # <<--- 關鍵：從 3.10 降級到 3.9
 
 # 設定工作目錄
 WORKDIR /app
